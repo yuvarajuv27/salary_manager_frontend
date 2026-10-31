@@ -2,7 +2,7 @@
 
 ## Goal
 
-Salary Manager lets one company record employees and calculate monthly pay for legal entities in nine countries. Admin and HR maintain the records. Employees never log in.
+Salary Manager lets a company record employees and calculate monthly pay for legal entities in nine countries. Each time someone uses Get started, they create a new company. Admin and HR maintain that company’s records. Employees never log in.
 
 Each entity has its own pay rules, entered by Admin and HR. On the company’s payroll day the product calculates a payslip for each employed person, stores it, and shows analytics in the entity’s currency and in the company’s primary currency.
 
@@ -12,13 +12,13 @@ The product stores each employee’s bank details for a later payout. It does no
 
 ### Account and access
 
-**FR-1. One company.** The installation has one parent account and one or more legal entities.
+**FR-1. Companies.** The installation holds as many companies as people create. Each company has its own Admins, HR users, legal entities, primary currency, and payroll day. A user belongs to one company. One company cannot see another company’s records.
 
-**FR-2. Sign-in.** Admin and HR sign in with email and password. The account is created with one Admin before anyone else can sign in. An Admin can create another Admin, or an HR user assigned to exactly one entity. Two users cannot share an email. HR cannot create or edit users.
+**FR-2. Get started and sign-in.** Get started and Sign in are always on the screen. Get started collects the company legal name, the primary currency, the payroll day, and the first Admin’s name, email, and password, creates that company, and signs the Admin in. Onboarding then collects one entity’s name and country before the rest of the app. Signing up again with a new email creates another company. An email already in use is refused. Sign in opens the company that email belongs to. An Admin can list users in their company and create another Admin, or an HR user assigned to exactly one entity of that company, by setting that person’s name, email, and password. That is the invitation. HR cannot use Get started, and HR cannot sign in until that user exists. Two users cannot share an email. HR cannot create or edit users. Changing or removing a user is outside this release.
 
-**FR-3. Admin scope.** An Admin sees the parent account and every entity. An Admin manages the company legal name, the primary currency, the payroll day, entities, and users, and can do every HR task on any entity.
+**FR-3. Admin scope.** An Admin sees their company and every entity of that company. An Admin manages the company legal name, the primary currency, the payroll day, entities, and users, and can do every HR task on any entity of that company, including that entity’s payslips.
 
-**FR-4. HR scope.** An HR user sees and manages only their entity: employees, salary, revisions, leave, bank details, and pay rules, plus that entity’s analytics. HR cannot create an entity, change an entity’s country, change the payroll day, change the primary currency, or open account analytics.
+**FR-4. HR scope.** An HR user sees and manages only their entity: employees, salary, revisions, leave, bank details, pay rules, payslips, and that entity’s analytics. HR cannot create an entity, change an entity’s country, change the payroll day, change the primary currency, or open account analytics.
 
 ### Countries, currency, and payroll day
 
@@ -36,19 +36,19 @@ The product stores each employee’s bank details for a later payout. It does no
 | Portugal | EUR |
 | France | EUR |
 
-**FR-6. Primary currency.** The account has one primary currency, chosen by Admin from INR, USD, GBP, CAD, JPY, AUD, SGD, and EUR.
+**FR-6. Primary currency.** Each company has one primary currency, chosen on Get started from INR, USD, GBP, CAD, JPY, AUD, SGD, and EUR. An Admin of that company can change it later.
 
-**FR-7. Country lock.** Before an entity’s first credited payslip, Admin can change its country, which updates the payout currency and clears any bank details already saved on its employees. After that first credited payslip, the country and currency stay fixed.
+**FR-7. Country lock.** Before an entity’s first credited payslip, Admin can change its country, which updates the payout currency. Each existing employee’s bank details must be replaced, in that same change, with a complete set for the new country. After that first credited payslip, the country and currency stay fixed.
 
-**FR-8. Payroll day.** The account has one payroll day, defaulting to the last day of the month. Admin can change it. HR cannot. Every entity runs on that calendar day. When the chosen day does not exist in a short month, that month runs on its last day. There is no per-entity disbursement setting and no control to run payroll early.
+**FR-8. Payroll day.** The account has one payroll day, stored as an integer from 1 to 31 and defaulting to 31, the last day of the month. Admin can change it. HR cannot. Every entity runs on that calendar day. When the chosen day does not exist in a short month, that month runs on its last day. The clock is UTC. There is no company timezone. The run fires at 00:00 UTC as the payroll day begins, and the month closes then. Edits later that UTC day stay out of the run. The open month keeps a frozen payroll date. Changing the payroll day leaves that date in place and applies from the following month. A credited month stays closed. At Get started, the first frozen date is the next payroll instant still in the future. If this month’s instant has already passed, this month is not credited. If the process is down at 00:00 UTC, the next wake credits a month whose frozen instant has passed, and it credits that month once. There is no per-entity disbursement setting and no control to run payroll early.
 
 ### Employees, salary, and leave
 
-**FR-9. Employee record.** HR for the entity, and Admin, can create and edit an employee. The employee has a name, one entity, an inclusive start date, an optional inclusive end date on or after the start date, and a monthly salary in the entity currency. The salary is zero or greater. The employee remains on the entity where they were created.
+**FR-9. Employee record.** HR for the entity, and Admin, can create and edit an employee. The employee has a name, a job role, a department, one entity, an inclusive start date, an optional inclusive end date on or after the start date, a required bank-detail set for the entity’s country, and an optional monthly salary in the entity currency. Job role and department are required text. The salary, when set, is zero or greater. An unset salary is not a salary of zero. Job role and department are shown with the employee. Pay uses salary, days, leave, and rules. The employee remains on the entity where they were created. The job role is the person’s job. It is separate from a user’s access role of Admin or HR.
 
-**FR-10. Salary in force.** A month uses the current monthly salary. Before that month is credited, HR or Admin can correct the amount, and the run uses the corrected amount. A revision saved on any day becomes the current salary on the first day of the next month. The month in which it was saved keeps the salary already in effect. A later revision saved in that same month replaces the earlier one. A revision cannot start later than the next month.
+**FR-10. Salary in force.** The open month is the calendar month of the frozen payroll date. That month uses the current monthly salary at the moment the run credits it. Before that month is credited, HR or Admin can correct the amount, and the run uses the corrected amount. A correction aimed at a credited month is refused. A revision saved on any day becomes the current salary on the first day of the next calendar month. The month in which it was saved keeps the salary already in effect. A later revision saved in that same month replaces the earlier one. A revision cannot start later than the next month. When a correction and a revision both set the salary the open month will use, the later save is the one the run reads.
 
-**FR-11. Payable days.** Every calendar day is payable, including weekends. A day is unpaid when it falls outside the employment dates or when HR or Admin has marked it as leave. Leave counts only on days the person is employed. A marked leave day is unpaid. For each payable day the product adds the monthly salary divided by the number of calendar days in that month. The total is the gross, and it is at least zero.
+**FR-11. Payable days.** Every calendar day of the month is payable, including weekends and days after the payroll day. A day is unpaid when it falls outside the employment dates or when HR or Admin has marked it as leave. Leave counts only on days the person is employed. A marked leave day is unpaid. Gross is the monthly salary times payable days, divided by the number of calendar days in that month, rounded once to the currency’s minor unit, half away from zero. The gross is at least zero. JPY rounds to the yen. The other currencies round to cents.
 
 **FR-12. Closed months.** Leave dates in a month already credited for that employee cannot be added or removed. Salary corrections and revisions leave a credited payslip unchanged.
 
@@ -56,7 +56,7 @@ The product stores each employee’s bank details for a later payout. It does no
 
 ### Bank details
 
-**FR-14. Fields.** HR or Admin can save bank details on the employee. The field set follows the entity’s country. Saving is accepted only when every field for that country is present, or when the bank details are left empty. Payroll calculation does not read these fields.
+**FR-14. Fields.** Bank details are part of the employee. Creating an employee requires a complete set for the entity’s country. The field set follows that country. A missing field or a partial set is refused. There is no separate bank record, and the set cannot be cleared. Payroll calculation does not read these fields.
 
 | Country | Fields |
 |---|---|
@@ -70,7 +70,7 @@ The product stores each employee’s bank details for a later payout. It does no
 | Portugal | Account holder name, IBAN |
 | France | Account holder name, IBAN |
 
-**FR-15. Encryption and mask.** Bank details are encrypted at rest. The account holder name is shown in full. Every other field is shown as a mask of its last four characters. A value shorter than four characters is shown fully masked. Those full values are never shown again, never placed on a payslip, and never included in analytics. Replacing the stored details means entering a new complete set. Clearing them removes the stored set.
+**FR-15. Encryption and mask.** Bank details are encrypted at rest on the employee. The account holder name is shown in full. Every other field is shown as a mask of its last four characters. A value shorter than four characters is shown fully masked. Those full values are never shown again, never placed on a payslip, and never included in analytics. Replacing the stored details means entering a new complete set.
 
 ### Pay rules and preview
 
@@ -78,7 +78,7 @@ The product stores each employee’s bank details for a later payout. It does no
 
 **FR-17. Rule shape.** Each rule has a name, a side, and an amount. The side is an employee deduction or an employer contribution. The amount is a percent of gross greater than 0 and at most 100, or a fixed amount in the entity currency greater than 0. A percent rule may have a ceiling greater than 0. A fixed amount has no ceiling. A rule is refused when the name is blank or any amount is outside those bounds.
 
-**FR-18. Calculation.** Every percent rule uses the same gross. One line does not reduce the base of the next. A ceiling limits the gross that line sees. On the payroll day the gross is the prorated salary from FR-11. A fixed employee deduction is applied in full. Net pay is the greater of zero and gross minus employee deductions. A fixed employer amount is added in full. Employer cost is gross plus employer contributions. With no rules, net equals the prorated gross and employer cost equals that gross.
+**FR-18. Calculation.** Every percent rule uses the same gross. One line does not reduce the base of the next. A ceiling limits the gross that line sees: the base is the smaller of the gross and the ceiling. A percent line is rounded once to the currency’s minor unit, half away from zero. On the payroll day the gross is the prorated salary from FR-11. A fixed employee deduction is applied in full. Net pay is the greater of zero and gross minus employee deductions. A fixed employer amount is added in full. Employer cost is gross plus employer contributions. With no rules, net equals the prorated gross and employer cost equals that gross. A percent may use up to four decimal places.
 
 **FR-19. Preview.** The rule screen shows a preview beside the editor. Admin or HR types a gross and sees each line in list order, employee deductions, net, employer contributions, and employer cost. The preview uses the rules on the screen, including unsaved edits, and the typed gross. It does not create a payslip and does not apply day-count proration.
 
@@ -90,7 +90,7 @@ Worked example: gross 10,000, an employee line at 10%, an employer line at 12% w
 
 ### Payroll run
 
-**FR-22. Who is credited.** On the payroll day the product creates a credited payslip for each employee who has at least one payable day and a monthly salary set. An employee employed that month with every day on leave gets a zero-gross payslip. An employee with no payable day gets no payslip. An employed person with no monthly salary set is skipped, the reason is recorded, and everyone else in the entity is still credited. An entity with no employees produces no payslips.
+**FR-22. Who is credited.** On the payroll day the product creates a credited payslip for each employee who was employed on at least one calendar day of that month and has a monthly salary set, including a salary of zero. An employee employed that month with every employed day on leave gets a zero-gross payslip. An employee with no day in the month gets no payslip and no skip row. An employee employed on at least one day of the month with no monthly salary set is skipped, the reason is recorded, and everyone else in the entity is still credited. That skip appears on the month’s payslip list and has no detail page. An entity with no employees produces no payslips.
 
 **FR-23. Closed result.** A credited payslip stays as calculated. The run still credits payslips in the entity currency when the exchange-rate fetch fails.
 
@@ -106,13 +106,15 @@ Worked example: gross 10,000, an employee line at 10%, an employer line at 12% w
 
 - the latest credited month’s headcount, gross, net, and employer cost
 - a monthly line of those three amounts for the last 12 credited months, or fewer when fewer months exist
-- that month’s employee deductions and employer contributions, totaled by rule name
+- that month’s employee deductions and employer contributions, totaled by rule name and side
 
-Headcount is the number of payslips, including zero-gross payslips.
+Headcount is the number of payslips, including zero-gross payslips. Skip rows are left out of the headcount and out of the money.
 
 **FR-27. Account analytics.** Admin sees the parent account in the primary currency: the same headline numbers, the same 12-month line, and a bar of employer cost by entity for the latest credited month. An entity whose conversion for that month is pending is omitted from those totals, including headcount, and listed by name. Entities whose rates were stored are included.
 
 **FR-28. Empty analytics.** Before the first credited month, the entity page and the account page show that there is nothing to chart yet.
+
+**FR-29. Payslip screens.** Admin and HR can open a credited month’s payslip list and a detail page for one employee. The detail shows payable days, leave days, days outside employment, gross, each stored rule line and the amount it produced, net, and employer cost. It shows the employee’s current job role and department. Bank fields stay off the payslip. HR sees only their entity. Admin sees every entity.
 
 ## Outside this release
 
@@ -127,15 +129,17 @@ Headcount is the number of payslips, including zero-gross payslips.
 - Paid leave that still pays
 - Government filing
 - Predefined country rule packs
+- Changing or removing a user
 
 ## Done when
 
 This release is complete when:
 
-- Admin can set the company legal name, the primary currency, and the payroll day
+- Get started creates a company and its first Admin, then onboarding collects one entity. Sign in is always available, and a second signup with a new email creates another company
 - Admin can add an entity in any of the nine countries, with rules and a gross preview
 - Admin can add another Admin, or an HR user for one entity
-- HR can keep that entity’s employees, salary, next-month revisions, leave, bank details, and rules
+- HR can keep that entity’s employees, including job role and department, plus salary, next-month revisions, leave, bank details, and rules
+- Admin and HR can open a credited month’s payslip list, including skip rows, and a payslip detail page
 - Bank details are encrypted at rest and shown only in masked form
 - The payroll day credits a month from calendar days, leave, and employment dates, using the saved rules
 - Entity and account analytics match FR-26 and FR-27
