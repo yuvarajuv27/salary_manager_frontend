@@ -52,7 +52,7 @@ The product stores each employee’s bank details for a later payout. It does no
 
 **FR-12. Closed months.** Leave dates in a month already credited for that employee cannot be added or removed. Salary corrections and revisions leave a credited payslip unchanged.
 
-**FR-13. Delete.** HR for the entity, and Admin, can delete an employee who has no payslip. An employee who has a payslip cannot be deleted. Their employment ends by setting an end date.
+**FR-13. Delete.** HR for the entity, and Admin, can delete an employee who has no payslip. A skip row does not block that delete, and the employee’s skip rows are removed with the employee. An employee who has a payslip cannot be deleted. Their employment ends by setting an end date.
 
 ### Bank details
 
@@ -76,17 +76,19 @@ The product stores each employee’s bank details for a later payout. It does no
 
 **FR-16. Rule list.** Admin creates an entity with a name and a country. The rule list starts empty and can be saved empty. Choosing a country does not insert rules. HR for that entity, and Admin, can add, edit, reorder, and delete rules.
 
-**FR-17. Rule shape.** Each rule has a name, a side, and an amount. The side is an employee deduction or an employer contribution. The amount is a percent of gross greater than 0 and at most 100, or a fixed amount in the entity currency greater than 0. A percent rule may have a ceiling greater than 0. A fixed amount has no ceiling. A rule is refused when the name is blank or any amount is outside those bounds.
+**FR-17. Rule shape.** Each rule has a name, a side, and an amount. The side is an earning, an employee deduction, or an employer contribution. An earning is a percent of gross greater than 0 and at most 100, with no ceiling and no fixed amount. A deduction or employer contribution is a percent of gross greater than 0 and at most 100, or a fixed amount in the entity currency greater than 0. A percent deduction or employer contribution may have a ceiling greater than 0. A fixed amount has no ceiling. A rule is refused when the name is blank or any amount is outside those bounds. Names such as Base, HRA, and Allowance are earning rule names. The product does not supply those names.
 
-**FR-18. Calculation.** Every percent rule uses the same gross. One line does not reduce the base of the next. A ceiling limits the gross that line sees: the base is the smaller of the gross and the ceiling. A percent line is rounded once to the currency’s minor unit, half away from zero. On the payroll day the gross is the prorated salary from FR-11. A fixed employee deduction is applied in full. Net pay is the greater of zero and gross minus employee deductions. A fixed employer amount is added in full. Employer cost is gross plus employer contributions. With no rules, net equals the prorated gross and employer cost equals that gross. A percent may use up to four decimal places.
+**FR-18. Calculation.** Earning rules split the gross for display. With none, the payslip shows no earnings split. With some, their percents must sum to 100. Each earning line is that percent of gross, rounded once to the currency’s minor unit, half away from zero, and the last earning line in list order is gross minus the earlier earning lines so the lines add up to gross. When the percents do not sum to 100, the preview is refused and the payroll run stores no earning lines. Deductions and employer contributions still run.
 
-**FR-19. Preview.** The rule screen shows a preview beside the editor. Admin or HR types a gross and sees each line in list order, employee deductions, net, employer contributions, and employer cost. The preview uses the rules on the screen, including unsaved edits, and the typed gross. It does not create a payslip and does not apply day-count proration.
+Every deduction and employer percent uses the same gross. One line does not reduce the base of the next, and an earning is not a base for a deduction. A ceiling limits the gross that deduction or employer line sees: the base is the smaller of the gross and the ceiling. A percent line is rounded once to the currency’s minor unit, half away from zero. On the payroll day the gross is the prorated salary from FR-11. A fixed employee deduction is applied in full. Net pay is the greater of zero and gross minus employee deductions. A fixed employer amount is added in full. Employer cost is gross plus employer contributions. With no deduction or employer rules, net equals the prorated gross and employer cost equals that gross. A percent may use up to four decimal places.
+
+**FR-19. Preview.** The rule screen shows a preview beside the editor. Admin or HR types a gross and sees the earnings split when those percents sum to 100, then each other line in list order, employee deductions, net, employer contributions, and employer cost. The preview uses the rules on the screen, including unsaved edits, and the typed gross. It does not create a payslip and does not apply day-count proration. Earning percents that are present and do not sum to 100 are refused.
 
 Worked example: gross 10,000, an employee line at 10%, an employer line at 12% with a ceiling of 8,000, and an employee fixed amount of 500. The employee percent is 1,000. The employer line is 960. Net is 8,500. Employer cost is 10,960.
 
-**FR-20. Payslip copy.** The payroll run uses the rules saved at that moment. The payslip stores the day counts, gross, a copy of each line and the amount it produced, net, and employer cost. Later edits to rules leave that payslip unchanged.
+**FR-20. Payslip copy.** The payroll run uses the rules saved at that moment. The payslip stores the day counts, gross, net, employer cost, and one document of the lines: the earnings split when the saved earning percents sum to 100, and each deduction and employer line with the amount it produced. Later edits to rules leave that payslip unchanged.
 
-**FR-21. Delete entity.** Admin can delete an entity that has no credited payslip. That delete removes its rules and its employees. An entity that has a credited payslip cannot be deleted.
+**FR-21. Delete entity.** Admin can delete an entity that has no payslip. Skip rows do not block that delete and are removed with its employees. That delete removes its rules and its employees. An entity that has a payslip cannot be deleted.
 
 ### Payroll run
 
@@ -114,7 +116,7 @@ Headcount is the number of payslips, including zero-gross payslips. Skip rows ar
 
 **FR-28. Empty analytics.** Before the first credited month, the entity page and the account page show that there is nothing to chart yet.
 
-**FR-29. Payslip screens.** Admin and HR can open a credited month’s payslip list and a detail page for one employee. The detail shows payable days, leave days, days outside employment, gross, each stored rule line and the amount it produced, net, and employer cost. It shows the employee’s current job role and department. Bank fields stay off the payslip. HR sees only their entity. Admin sees every entity.
+**FR-29. Payslip screens.** Admin and HR can open a credited month’s payslip list and a detail page for one employee. The detail shows payable days, leave days, days outside employment, gross, the earnings split when it was stored, each stored deduction and employer line and the amount it produced, net, and employer cost. It shows the employee’s current job role and department. Bank fields stay off the payslip. HR sees only their entity. Admin sees every entity.
 
 ## Outside this release
 

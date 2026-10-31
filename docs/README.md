@@ -8,7 +8,7 @@ Canonical **whole-project** requirements live in this repo. Feature work uses th
 |---|---|
 | [requirements/project.md](./requirements/project.md) | Whole-project product requirements |
 | [requirements/features/](./requirements/features/) | FE / cross-cutting feature requirements |
-| [architecture/](./architecture/) | Architecture notes per feature |
+| [architecture/](./architecture/) | Frontend architecture. The backend repo holds the server architecture |
 | [plans/](./plans/) | Implementation plans per feature |
 
 Sibling backend: `../salary_manager_backend` (links here for project requirements; keeps its own BE feature docs).
