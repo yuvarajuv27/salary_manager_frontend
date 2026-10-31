@@ -1,1 +1,142 @@
 # Salary Manager — Project Requirements
+
+## Goal
+
+Salary Manager lets one company record employees and calculate monthly pay for legal entities in nine countries. Admin and HR maintain the records. Employees never log in.
+
+Each entity has its own pay rules, entered by Admin and HR. On the company’s payroll day the product calculates a payslip for each employed person, stores it, and shows analytics in the entity’s currency and in the company’s primary currency.
+
+The product stores each employee’s bank details for a later payout. It does not send money.
+
+## Functional requirements
+
+### Account and access
+
+**FR-1. One company.** The installation has one parent account and one or more legal entities.
+
+**FR-2. Sign-in.** Admin and HR sign in with email and password. The account is created with one Admin before anyone else can sign in. An Admin can create another Admin, or an HR user assigned to exactly one entity. Two users cannot share an email. HR cannot create or edit users.
+
+**FR-3. Admin scope.** An Admin sees the parent account and every entity. An Admin manages the company legal name, the primary currency, the payroll day, entities, and users, and can do every HR task on any entity.
+
+**FR-4. HR scope.** An HR user sees and manages only their entity: employees, salary, revisions, leave, bank details, and pay rules, plus that entity’s analytics. HR cannot create an entity, change an entity’s country, change the payroll day, change the primary currency, or open account analytics.
+
+### Countries, currency, and payroll day
+
+**FR-5. Countries.** An entity’s country is one of the following. The country sets the payout currency.
+
+| Country | Payout currency |
+|---|---|
+| India | INR |
+| United States | USD |
+| United Kingdom | GBP |
+| Canada | CAD |
+| Japan | JPY |
+| Australia | AUD |
+| Singapore | SGD |
+| Portugal | EUR |
+| France | EUR |
+
+**FR-6. Primary currency.** The account has one primary currency, chosen by Admin from INR, USD, GBP, CAD, JPY, AUD, SGD, and EUR.
+
+**FR-7. Country lock.** Before an entity’s first credited payslip, Admin can change its country, which updates the payout currency and clears any bank details already saved on its employees. After that first credited payslip, the country and currency stay fixed.
+
+**FR-8. Payroll day.** The account has one payroll day, defaulting to the last day of the month. Admin can change it. HR cannot. Every entity runs on that calendar day. When the chosen day does not exist in a short month, that month runs on its last day. There is no per-entity disbursement setting and no control to run payroll early.
+
+### Employees, salary, and leave
+
+**FR-9. Employee record.** HR for the entity, and Admin, can create and edit an employee. The employee has a name, one entity, an inclusive start date, an optional inclusive end date on or after the start date, and a monthly salary in the entity currency. The salary is zero or greater. The employee remains on the entity where they were created.
+
+**FR-10. Salary in force.** A month uses the current monthly salary. Before that month is credited, HR or Admin can correct the amount, and the run uses the corrected amount. A revision saved on any day becomes the current salary on the first day of the next month. The month in which it was saved keeps the salary already in effect. A later revision saved in that same month replaces the earlier one. A revision cannot start later than the next month.
+
+**FR-11. Payable days.** Every calendar day is payable, including weekends. A day is unpaid when it falls outside the employment dates or when HR or Admin has marked it as leave. Leave counts only on days the person is employed. A marked leave day is unpaid. For each payable day the product adds the monthly salary divided by the number of calendar days in that month. The total is the gross, and it is at least zero.
+
+**FR-12. Closed months.** Leave dates in a month already credited for that employee cannot be added or removed. Salary corrections and revisions leave a credited payslip unchanged.
+
+**FR-13. Delete.** HR for the entity, and Admin, can delete an employee who has no payslip. An employee who has a payslip cannot be deleted. Their employment ends by setting an end date.
+
+### Bank details
+
+**FR-14. Fields.** HR or Admin can save bank details on the employee. The field set follows the entity’s country. Saving is accepted only when every field for that country is present, or when the bank details are left empty. Payroll calculation does not read these fields.
+
+| Country | Fields |
+|---|---|
+| India | Account holder name, account number, IFSC |
+| United States | Account holder name, account number, routing number |
+| United Kingdom | Account holder name, account number, sort code |
+| Canada | Account holder name, account number, institution number, transit number |
+| Japan | Account holder name, account number, bank code, branch code |
+| Australia | Account holder name, account number, BSB |
+| Singapore | Account holder name, account number, bank code |
+| Portugal | Account holder name, IBAN |
+| France | Account holder name, IBAN |
+
+**FR-15. Encryption and mask.** Bank details are encrypted at rest. The account holder name is shown in full. Every other field is shown as a mask of its last four characters. A value shorter than four characters is shown fully masked. Those full values are never shown again, never placed on a payslip, and never included in analytics. Replacing the stored details means entering a new complete set. Clearing them removes the stored set.
+
+### Pay rules and preview
+
+**FR-16. Rule list.** Admin creates an entity with a name and a country. The rule list starts empty and can be saved empty. Choosing a country does not insert rules. HR for that entity, and Admin, can add, edit, reorder, and delete rules.
+
+**FR-17. Rule shape.** Each rule has a name, a side, and an amount. The side is an employee deduction or an employer contribution. The amount is a percent of gross greater than 0 and at most 100, or a fixed amount in the entity currency greater than 0. A percent rule may have a ceiling greater than 0. A fixed amount has no ceiling. A rule is refused when the name is blank or any amount is outside those bounds.
+
+**FR-18. Calculation.** Every percent rule uses the same gross. One line does not reduce the base of the next. A ceiling limits the gross that line sees. On the payroll day the gross is the prorated salary from FR-11. A fixed employee deduction is applied in full. Net pay is the greater of zero and gross minus employee deductions. A fixed employer amount is added in full. Employer cost is gross plus employer contributions. With no rules, net equals the prorated gross and employer cost equals that gross.
+
+**FR-19. Preview.** The rule screen shows a preview beside the editor. Admin or HR types a gross and sees each line in list order, employee deductions, net, employer contributions, and employer cost. The preview uses the rules on the screen, including unsaved edits, and the typed gross. It does not create a payslip and does not apply day-count proration.
+
+Worked example: gross 10,000, an employee line at 10%, an employer line at 12% with a ceiling of 8,000, and an employee fixed amount of 500. The employee percent is 1,000. The employer line is 960. Net is 8,500. Employer cost is 10,960.
+
+**FR-20. Payslip copy.** The payroll run uses the rules saved at that moment. The payslip stores the day counts, gross, a copy of each line and the amount it produced, net, and employer cost. Later edits to rules leave that payslip unchanged.
+
+**FR-21. Delete entity.** Admin can delete an entity that has no credited payslip. That delete removes its rules and its employees. An entity that has a credited payslip cannot be deleted.
+
+### Payroll run
+
+**FR-22. Who is credited.** On the payroll day the product creates a credited payslip for each employee who has at least one payable day and a monthly salary set. An employee employed that month with every day on leave gets a zero-gross payslip. An employee with no payable day gets no payslip. An employed person with no monthly salary set is skipped, the reason is recorded, and everyone else in the entity is still credited. An entity with no employees produces no payslips.
+
+**FR-23. Closed result.** A credited payslip stays as calculated. The run still credits payslips in the entity currency when the exchange-rate fetch fails.
+
+### Currency conversion
+
+**FR-24. Stored rate.** On the payroll day, for each entity whose currency differs from the primary currency, the product takes the rate from [Frankfurter](https://www.frankfurter.app/) (European Central Bank reference rates) and stores, with that month’s payroll, the rate, the date that rate was published, and the converted gross, net, and employer cost. When the currencies match, the stored rate is 1. When the payroll date has no published rate, the product stores the previous published business day’s rate and that date. These nine currencies are in the Frankfurter set.
+
+**FR-25. Pending and history.** If Frankfurter cannot be reached, the conversion for that entity stays pending. A later payroll run fills it with the rate for the original payroll date. Changing the primary currency applies to future runs. A closed month keeps the conversion it was given.
+
+### Analytics
+
+**FR-26. Entity analytics.** HR sees their entity only. Admin can open any entity. Figures are in the payout currency and show:
+
+- the latest credited month’s headcount, gross, net, and employer cost
+- a monthly line of those three amounts for the last 12 credited months, or fewer when fewer months exist
+- that month’s employee deductions and employer contributions, totaled by rule name
+
+Headcount is the number of payslips, including zero-gross payslips.
+
+**FR-27. Account analytics.** Admin sees the parent account in the primary currency: the same headline numbers, the same 12-month line, and a bar of employer cost by entity for the latest credited month. An entity whose conversion for that month is pending is omitted from those totals, including headcount, and listed by name. Entities whose rates were stored are included.
+
+**FR-28. Empty analytics.** Before the first credited month, the entity page and the account page show that there is nothing to chart yet.
+
+## Outside this release
+
+- Sending money, bank files, or a payment provider on the payroll day
+- An outside system marking pay as credited
+- Syncing leave from another system
+- Employee login
+- Moving an employee from one entity to another
+- Countries beyond the nine
+- Bracket rules, and rules that depend on an employee field
+- A public-holiday calendar
+- Paid leave that still pays
+- Government filing
+- Predefined country rule packs
+
+## Done when
+
+This release is complete when:
+
+- Admin can set the company legal name, the primary currency, and the payroll day
+- Admin can add an entity in any of the nine countries, with rules and a gross preview
+- Admin can add another Admin, or an HR user for one entity
+- HR can keep that entity’s employees, salary, next-month revisions, leave, bank details, and rules
+- Bank details are encrypted at rest and shown only in masked form
+- The payroll day credits a month from calendar days, leave, and employment dates, using the saved rules
+- Entity and account analytics match FR-26 and FR-27
+- A closed month stays unchanged after later edits to salary, leave, rules, bank details, or the primary currency
