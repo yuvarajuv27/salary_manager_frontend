@@ -6,6 +6,7 @@ import CompanyPage from "./pages/CompanyPage";
 import EmployeeDetailPage from "./pages/EmployeeDetailPage";
 import EmployeesPage from "./pages/EmployeesPage";
 import EntitiesPage from "./pages/EntitiesPage";
+import EntityAnalyticsPage from "./pages/EntityAnalyticsPage";
 import EntityDetailPage from "./pages/EntityDetailPage";
 import GetStartedPage from "./pages/GetStartedPage";
 import OnboardingPage from "./pages/OnboardingPage";
@@ -132,7 +133,7 @@ export default function App() {
         <Route path="/entities/:id" element={<EntityDetailPage />} />
         <Route
           path="/entities/:id/analytics"
-          element={<p>Entity analytics</p>}
+          element={<EntityAnalyticsPage />}
         />
         <Route path="/entities/:id/rules" element={<RulesPage />} />
         <Route path="/entities/:id/employees" element={<EmployeesPage />} />
