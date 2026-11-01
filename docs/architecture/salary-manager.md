@@ -1,6 +1,6 @@
 # Salary Manager — Frontend architecture
 
-Product requirements: [project.md](../requirements/project.md). The server design, database, calculator, payroll run, and API contract are in the [backend architecture](../../../salary_manager_backend_local/docs/architecture/salary-manager.md).
+Product requirements: [project.md](../requirements/project.md). The server design, database, calculator, payroll run, and API contract are in the [backend architecture](../../../salary_manager_backend/docs/architecture/salary-manager.md).
 
 Each Get started creates a company. A signed-in user sees only that company.
 
@@ -18,24 +18,52 @@ In local development the Vite app and the API are different ports on `localhost`
 
 ## Libraries
 
-The scaffold in `src/` is still the Vite JavaScript template. New screen code is TypeScript. React Router v7 runs in declarative mode: `BrowserRouter`, `Routes`, `Route`, `Link`, and `useNavigate`. It has no loaders, actions, or data router. TanStack Query owns every read and write. Charts for at most twelve months, and one bar per entity, are drawn as SVG in the app.
+Screen code is TypeScript. React Router v7 runs in declarative mode: `BrowserRouter`, `Routes`, `Route`, `Link`, and `useNavigate`. It has no loaders, actions, or data router. TanStack Query owns every read and write. Analytics charts use Chart.js (`react-chartjs-2`). UI uses Tailwind CSS and shadcn/ui.
 
 | Package | Use |
 |---|---|
-| `react`, `react-dom` | UI. Already installed. |
-| `react-router` 7 | Which screen is on screen, and where to go after a save. Add it. Declarative mode only. |
-| `@tanstack/react-query` | Session, lists, details, previews, and saves. Add it. |
-| `typescript` | Screen code. Add it with `typescript-eslint`. `@types/react` and `@types/react-dom` are already installed. |
+| `react`, `react-dom` | UI. |
+| `react-router` 7 | Which screen is on screen, and where to go after a save. Declarative mode only. |
+| `@tanstack/react-query` | Session, lists, details, previews, and saves. |
+| `typescript` | Screen code. |
+| `tailwindcss` | Utility styling and design tokens. |
+| shadcn/ui (Radix-based components under `src/components/ui`) | Buttons, inputs, tables, dialogs, cards, and related primitives. |
+| `chart.js`, `react-chartjs-2` | Entity and account analytics charts. |
+| `react-hook-form` | Dirty-aware forms; 422 field errors. |
+| `sonner` | Success/error toasts. |
 
 Development:
 
 | Package | Use |
 |---|---|
-| `vite`, `@vitejs/plugin-react` | Dev server and build. Already installed. |
-| `eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh` | Lint. Already installed. |
-| `vitest`, `jsdom`, `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom` | Screen tests. Add them. |
+| `vite`, `@vitejs/plugin-react` | Dev server and build. |
+| `eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh` | Lint. |
+| `vitest`, `jsdom`, `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom` | Screen tests. |
 
-This app does not add Axios, React Hook Form, a chart library, a component library, or a CSS framework. Styling stays in the plain CSS the Vite template already has.
+This app does not add Axios.
+
+## Shell and visual system
+
+Signed-in `AppShell`:
+
+- Viewport shell (`h-svh`): fixed left sidebar; sticky top bar; main content scrolls
+- Full-bleed main (no `#root` max-width); soft cool-gray canvas; teal primary accent
+- Admin top-bar entity switcher (FE context + `sessionStorage`); Entity sidebar when an entity is selected (Overview, Employees, Pay rules, Payslips → period list, Entity analytics)
+- HR: no switcher; Entity nav uses `session.user.entity_id`; top bar shows the user’s name only
+- Each page uses a `PageHeader` (title, optional description, optional primary action)
+- Content in white panels / tables
+
+Auth pages (`/get-started`, `/sign-in`): product name as the brand signal; centered card on soft gray; Get started ↔ Sign in cross-links (FR-2).
+
+Visual and interaction patterns:
+
+- Lists → shadcn `Table`; create flows → list-first + Dialog; destructive deletes → `AlertDialog`
+- Forms → React Hook Form; Save/Create enabled when dirty; 422 errors under fields; other errors → sonner toast
+- Loading → skeletons; empty states → short copy in the panel
+- Amounts → format with ISO currency code (e.g. `1,234.56 USD`)
+- Employees list → paginated API (`page` / `per_page` / `q`)
+
+Sidebar groups: Overview (analytics), Organization (Company, Users, Entities — role-gated), Entity context (Employees, Rules, Payslips, Entity analytics). Profile is linked from the top bar (`/profile`).
 
 ## How a screen gets data
 
@@ -61,15 +89,16 @@ The preview query must not compute net, gross, or employer cost in the browser. 
 |---|---|---|
 | Get started and Sign in | Both screens are always available while signed out. Get started creates a company and signs in the first Admin. Onboarding then asks for one entity’s name and country. A later sign-in with no entity returns to onboarding. | Sign in only, and only after an Admin has created their name, email, and password. Get started is not an HR path. |
 | Sign out | Clears the session and returns to Sign in. | Same. |
-| Company | Legal name, primary currency, payroll day for their company. | No. |
-| Users | List and create an Admin, or an HR user for one entity of their company. | No. |
-| Entities | List, create, rename, change country before the first credited payslip, delete only when that entity has no payslip. | Their entity only. No create, country change, or delete. |
+| Company | Legal name, primary currency, and pay schedule for their company. | No. |
+| Profile | Name, email, optional password. | Same. |
+| Users | List and create an Admin, or an HR user for one entity of their company. Search filters the list. | No. |
+| Entities | List, create, rename, change country before the first credited payslip, delete only when that entity has no payslip. Search filters the list. | Their entity only. No create, country change, or delete. |
 | Rules | Any entity of their company. Add, edit, reorder, delete. The preview sits beside the editor. | Their entity. |
-| Employees | Any entity of their company. Name, job role, department, dates, salary, leave, bank details. Delete only when that employee has no payslip. | Their entity. |
-| Payslips | Any entity of their company. A month’s list, including skip rows, and a detail page. A skip has no detail page. | Their entity. |
+| Employees | Any entity of their company. Name, job role, department, dates, salary, leave, bank details. Delete only when that employee has no payslip. Paginated list with search. | Their entity. |
+| Payslips | Any entity of their company. Credited periods list, then a period’s payslips (including skip rows) and a detail page. A skip has no detail page. | Their entity. |
 | Analytics | The landing page. Account analytics for the company, and any entity’s analytics. | The landing page. Their entity’s analytics only. No account page. |
 
-Routes: `/get-started`, `/sign-in`, `/onboarding` until the company has an entity, then `/` for analytics. That landing page is account analytics for an Admin and the HR user’s entity analytics for HR. The other routes are `/company`, `/users`, `/entities`, `/entities/:id`, `/entities/:id/rules`, `/entities/:id/employees`, `/entities/:id/employees/:employeeId`, `/entities/:id/payroll/:month`, and `/entities/:id/payroll/:month/:payslipId`.
+Routes: `/get-started`, `/sign-in`, `/onboarding` until the company has an entity, then `/` for analytics. That landing page is account analytics for an Admin and the HR user’s entity analytics for HR. The other routes are `/company`, `/profile`, `/users`, `/entities`, `/entities/:id`, `/entities/:id/rules`, `/entities/:id/employees`, `/entities/:id/employees/:employeeId`, `/entities/:id/payroll`, `/entities/:id/payroll/:month`, and `/entities/:id/payroll/:month/:payslipId`.
 
 Each screen calls the matching route in the backend API through TanStack Query.
 

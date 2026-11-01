@@ -8,7 +8,7 @@
 
 **Architecture:** Rails API owns records, money math, authorization, and the Solid Queue payroll clock. React (TypeScript, declarative React Router v7, TanStack Query) owns screens and form state; it never calculates pay and never authorizes beyond hiding links. Amounts on the wire are integer minor units plus currency code. Session is an HttpOnly `SameSite=Lax` cookie with `credentials: "include"`.
 
-**Tech Stack:** Rails `~> 8.1.4`, PostgreSQL, Solid Queue, bcrypt, Active Record Encryption, HTTParty (Frankfurter), RSpec. Vite + React 19, TypeScript, `react-router` 7 (declarative), `@tanstack/react-query`, Vitest + Testing Library. No Axios, RHF, chart libs, component libs, or CSS frameworks.
+**Tech Stack:** Rails `~> 8.1.4`, PostgreSQL, Solid Queue, bcrypt, Active Record Encryption, HTTParty (Frankfurter), RSpec. Vite + React 19, TypeScript, `react-router` 7 (declarative), `@tanstack/react-query`, Tailwind + shadcn/ui, Chart.js (`react-chartjs-2`), React Hook Form, sonner, Vitest + Testing Library. No Axios.
 
 **Specs (read before coding):**
 
@@ -800,7 +800,7 @@ Enable queue adapter + supervisor when testing payroll clock locally (see BE arc
 | FR-5 Countries / currencies | M2 |
 | FR-6 Primary currency | M1–M2 |
 | FR-7 Country lock + bank replace | M4 (lock enforced with payslips in M5) |
-| FR-8 Payroll day / UTC clock / freeze | M1 calendar + M2 patch + M5 scheduler |
+| FR-8 Pay schedule / UTC clock / freeze | M1 calendar + M2 patch + M5 scheduler; post-MVP weekly/biweekly |
 | FR-9–13 Employees, salary, leave, delete | M4–M5 |
 | FR-14–15 Bank fields / encryption / mask | M4 |
 | FR-16–21 Rules, preview, payslip copy, delete entity | M3 + M5 |
@@ -825,3 +825,48 @@ Plan saved to `docs/plans/salary-manager.md` (canonical). Backend companion: `sa
 2. **Inline Execution** — this session with `superpowers:executing-plans`, batching with checkpoints
 
 Start at **M0.1** unless a milestone is already complete.
+
+---
+
+## Post-MVP revisions (folded in)
+
+These shipped after M0–M6. Product requirements live in `docs/requirements/project.md`. FE shell/UI architecture lives in `docs/architecture/salary-manager.md`. Do **not** keep separate epic plan files; this section is the canonical revision plan.
+
+### R1 — Tailwind + shadcn UI
+
+- FE restyle: `AppShell`, `PageHeader`, auth cards, screen batches on soft gray canvas with teal accent.
+- Paths: `components.json`, `src/index.css`, `src/components/ui/*`, `src/components/layout/*`, restyled `src/pages/*`.
+- Shell and visual system details: `docs/architecture/salary-manager.md` § Shell and visual system.
+
+### R2 — Shell polish + Admin entity switcher
+
+- Full-bleed main (no `#root` max-width); fixed sidebar; sticky top bar; teal/neutral tokens.
+- Admin entity context picker (`useEntityContext` + `sessionStorage`); Entity sidebar (Overview, Employees, Rules, Payslips, Analytics).
+- HR: no picker; Entity nav for `session.user.entity_id`.
+
+### R3 — UX polish
+
+- Chart.js analytics charts; sonner toasts; skeletons; dialog creates; RHF dirty Save/Create; 422 → field errors.
+- Employees index: `{ employees, page, per_page, total, total_pages }` + `q` (BE + FE).
+- Account vs entity analytics copy clarity.
+- Demo seed: store currency conversions so account analytics is company-wide.
+
+### R4 — Demo seed (BE)
+
+- `DemoSeedLoader` + `rake seed:load_demo`: 10 entities × 1k employees, rules, salaries, open-period payslips.
+- Abort if seed Admin email already exists; tunables `entity_count` / `employees_per_entity` for tests.
+
+### R5 — Feedback epic 2
+
+| Item | Outcome |
+|---|---|
+| Auth brand | “Salary Manager” on Get started / Sign in |
+| Currency display | `formatMinor` always appends ISO code |
+| Profile | `GET/PATCH /profile` (name, email, optional password); FE `/profile` |
+| Search | Employees server `q`; Users/Entities client filter |
+| Payslips | Period list `/entities/:id/payroll` → period detail |
+| Pay frequency | Company `monthly` \| `weekly` \| `biweekly` + schedule fields; period bounds on runs; FR-8/FR-11 updated |
+| Rules | Add + remove via pay_rules APIs |
+| HR nav | Top bar shows user name only (no “HR” label) |
+
+**Verify revisions:** FE `npm test`; BE `bundle exec rspec` (Docker). No commits unless the user asks.
