@@ -3,19 +3,20 @@ import AppShell from "./components/layout/AppShell";
 import { useSession } from "./hooks/useSession";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import CompanyPage from "./pages/CompanyPage";
-import EmployeeDetailPage from "./pages/EmployeeDetailPage";
-import EmployeesPage from "./pages/EmployeesPage";
 import EntitiesPage from "./pages/EntitiesPage";
-import EntityAnalyticsPage from "./pages/EntityAnalyticsPage";
 import EntityDetailPage from "./pages/EntityDetailPage";
 import GetStartedPage from "./pages/GetStartedPage";
 import OnboardingPage from "./pages/OnboardingPage";
-import PayrollMonthPage from "./pages/PayrollMonthPage";
-import PayrollPeriodsPage from "./pages/PayrollPeriodsPage";
-import PayslipDetailPage from "./pages/PayslipDetailPage";
-import RulesPage from "./pages/RulesPage";
 import SignInPage from "./pages/SignInPage";
 import UsersPage from "./pages/UsersPage";
+import RulesPage from "./pages/RulesPage";
+import EmployeesPage from "./pages/EmployeesPage";
+import EmployeeDetailPage from "./pages/EmployeeDetailPage";
+import PayrollMonthPage from "./pages/PayrollMonthPage";
+import PayslipDetailPage from "./pages/PayslipDetailPage";
+import EntityAnalyticsPage from "./pages/EntityAnalyticsPage";
+import ProfilePage from "./pages/ProfilePage";
+import PayrollPeriodsPage from "./pages/PayrollPeriodsPage";
 
 function SessionLoading() {
   return <p>Loading…</p>;
@@ -129,6 +130,7 @@ export default function App() {
             </AdminOnly>
           }
         />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/entities" element={<EntitiesPage />} />
         <Route path="/entities/:id" element={<EntityDetailPage />} />
         <Route
@@ -141,7 +143,10 @@ export default function App() {
           path="/entities/:id/employees/:employeeId"
           element={<EmployeeDetailPage />}
         />
-        <Route path="/entities/:id/payroll" element={<PayrollPeriodsPage />} />
+        <Route
+          path="/entities/:id/payroll"
+          element={<PayrollPeriodsPage />}
+        />
         <Route
           path="/entities/:id/payroll/:month"
           element={<PayrollMonthPage />}
