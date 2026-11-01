@@ -3,6 +3,8 @@ import AppShell from "./components/layout/AppShell";
 import { useSession } from "./hooks/useSession";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import CompanyPage from "./pages/CompanyPage";
+import EmployeeDetailPage from "./pages/EmployeeDetailPage";
+import EmployeesPage from "./pages/EmployeesPage";
 import EntitiesPage from "./pages/EntitiesPage";
 import EntityDetailPage from "./pages/EntityDetailPage";
 import GetStartedPage from "./pages/GetStartedPage";
@@ -130,7 +132,11 @@ export default function App() {
           element={<p>Entity analytics</p>}
         />
         <Route path="/entities/:id/rules" element={<RulesPage />} />
-        <Route path="/entities/:id/employees" element={<p>Employees</p>} />
+        <Route path="/entities/:id/employees" element={<EmployeesPage />} />
+        <Route
+          path="/entities/:id/employees/:employeeId"
+          element={<EmployeeDetailPage />}
+        />
         <Route path="/entities/:id/payroll" element={<p>Payslips</p>} />
         <Route
           path="/entities/:id/payroll/:month"
