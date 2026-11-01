@@ -7,6 +7,7 @@ import EntitiesPage from "./pages/EntitiesPage";
 import EntityDetailPage from "./pages/EntityDetailPage";
 import GetStartedPage from "./pages/GetStartedPage";
 import OnboardingPage from "./pages/OnboardingPage";
+import RulesPage from "./pages/RulesPage";
 import SignInPage from "./pages/SignInPage";
 import UsersPage from "./pages/UsersPage";
 
@@ -128,12 +129,9 @@ export default function App() {
           path="/entities/:id/analytics"
           element={<p>Entity analytics</p>}
         />
-        <Route path="/entities/:id/rules" element={<p>Rules</p>} />
+        <Route path="/entities/:id/rules" element={<RulesPage />} />
         <Route path="/entities/:id/employees" element={<p>Employees</p>} />
-        <Route
-          path="/entities/:id/payroll"
-          element={<p>Payslips</p>}
-        />
+        <Route path="/entities/:id/payroll" element={<p>Payslips</p>} />
         <Route
           path="/entities/:id/payroll/:month"
           element={<p>Payroll month</p>}
