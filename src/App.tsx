@@ -1,8 +1,14 @@
 import { Navigate, Route, Routes } from "react-router";
+import AppShell from "./components/layout/AppShell";
 import { useSession } from "./hooks/useSession";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import CompanyPage from "./pages/CompanyPage";
+import EntitiesPage from "./pages/EntitiesPage";
+import EntityDetailPage from "./pages/EntityDetailPage";
 import GetStartedPage from "./pages/GetStartedPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import SignInPage from "./pages/SignInPage";
+import UsersPage from "./pages/UsersPage";
 
 function SessionLoading() {
   return <p>Loading…</p>;
@@ -35,12 +41,38 @@ function RequireSignedIn({ children }: { children: React.ReactNode }) {
   return children;
 }
 
+function RequireEntity({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
+  if (!session?.company.has_entity) {
+    return <Navigate to="/onboarding" replace />;
+  }
+  return children;
+}
+
 function RequireNoEntity({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   if (session?.company.has_entity) {
     return <Navigate to="/" replace />;
   }
   return children;
+}
+
+function AdminOnly({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
+  if (session?.user.access_role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+}
+
+function AuthenticatedLayout() {
+  return (
+    <RequireSignedIn>
+      <RequireEntity>
+        <AppShell />
+      </RequireEntity>
+    </RequireSignedIn>
+  );
 }
 
 export default function App() {
@@ -72,7 +104,41 @@ export default function App() {
           </RequireSignedIn>
         }
       />
-      <Route path="*" element={<Navigate to="/get-started" replace />} />
+      <Route element={<AuthenticatedLayout />}>
+        <Route path="/" element={<AnalyticsPage />} />
+        <Route
+          path="/company"
+          element={
+            <AdminOnly>
+              <CompanyPage />
+            </AdminOnly>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <AdminOnly>
+              <UsersPage />
+            </AdminOnly>
+          }
+        />
+        <Route path="/entities" element={<EntitiesPage />} />
+        <Route path="/entities/:id" element={<EntityDetailPage />} />
+        <Route
+          path="/entities/:id/analytics"
+          element={<p>Entity analytics</p>}
+        />
+        <Route path="/entities/:id/rules" element={<p>Rules</p>} />
+        <Route path="/entities/:id/employees" element={<p>Employees</p>} />
+        <Route
+          path="/entities/:id/payroll"
+          element={<p>Payslips</p>}
+        />
+        <Route
+          path="/entities/:id/payroll/:month"
+          element={<p>Payroll month</p>}
+        />
+      </Route>
     </Routes>
   );
 }
