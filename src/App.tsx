@@ -9,6 +9,9 @@ import EntitiesPage from "./pages/EntitiesPage";
 import EntityDetailPage from "./pages/EntityDetailPage";
 import GetStartedPage from "./pages/GetStartedPage";
 import OnboardingPage from "./pages/OnboardingPage";
+import PayrollMonthPage from "./pages/PayrollMonthPage";
+import PayrollPeriodsPage from "./pages/PayrollPeriodsPage";
+import PayslipDetailPage from "./pages/PayslipDetailPage";
 import RulesPage from "./pages/RulesPage";
 import SignInPage from "./pages/SignInPage";
 import UsersPage from "./pages/UsersPage";
@@ -137,10 +140,14 @@ export default function App() {
           path="/entities/:id/employees/:employeeId"
           element={<EmployeeDetailPage />}
         />
-        <Route path="/entities/:id/payroll" element={<p>Payslips</p>} />
+        <Route path="/entities/:id/payroll" element={<PayrollPeriodsPage />} />
         <Route
           path="/entities/:id/payroll/:month"
-          element={<p>Payroll month</p>}
+          element={<PayrollMonthPage />}
+        />
+        <Route
+          path="/entities/:id/payroll/:month/:payslipId"
+          element={<PayslipDetailPage />}
         />
       </Route>
     </Routes>
