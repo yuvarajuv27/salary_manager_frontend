@@ -1,16 +1,89 @@
-# React + Vite
+# Salary Manager (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React client for **Salary Manager**: multi-company Admin/HR payroll for legal entities in nine countries. Admins and HR maintain company records, employees, pay rules, and payslips. Employees never sign in. The app does not send money; it stores bank details for a later payout.
 
-Currently, two official plugins are available:
+This repo is the **canonical home for whole-project product requirements**. The API lives in the sibling [salary_manager_backend](../salary_manager_backend) repository.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## What this app does
 
-## React Compiler
+- Get started / Sign in with an HttpOnly session cookie (`credentials: "include"`)
+- Admin: company settings, users, entities, all HR tasks across entities
+- HR: one assigned entity (employees, rules, payslips, entity analytics)
+- Pay rules with live preview (server calculates; the UI never does money math)
+- Workforce: employees, encrypted bank details (masked on read), salary, leave
+- Payroll period list and payslip detail from credited runs
+- Account analytics (Admin) and entity analytics (Admin/HR), Chart.js charts
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Stack
 
-## Expanding the ESLint configuration
+| Piece | Choice |
+|---|---|
+| UI | React 19, TypeScript, Vite |
+| Routing | React Router 7 (declarative) |
+| Data | TanStack Query + `fetch` |
+| Styling | Tailwind CSS + shadcn/ui |
+| Forms / toasts | React Hook Form, sonner |
+| Charts | Chart.js (`react-chartjs-2`) |
+| Tests | Vitest + Testing Library |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Docs
+
+| Path | Purpose |
+|---|---|
+| [docs/README.md](./docs/README.md) | Docs index for this repo |
+| [docs/requirements/project.md](./docs/requirements/project.md) | **Canonical** whole-product requirements (FR-*) |
+| [docs/architecture/salary-manager.md](./docs/architecture/salary-manager.md) | Frontend architecture (shell, libraries, screens) |
+| [docs/plans/salary-manager.md](./docs/plans/salary-manager.md) | Implementation plan (M0–M6 + post-MVP revisions) |
+| [docs/SUPERPOWERS_INSTALL.md](./docs/SUPERPOWERS_INSTALL.md) | Install Superpowers at **project** scope |
+
+Backend architecture and BE plans: `../salary_manager_backend/docs/`.
+
+Feature work follows Superpowers: brainstorm → requirements → architecture → plan → TDD. Do not invent requirements; capture what was approved.
+
+## Local development
+
+### Prerequisites
+
+- Node.js (compatible with the Vite 8 toolchain in `package.json`)
+- Backend API running (default `http://localhost:3000`) — see the backend README
+
+### Install and run
+
+```bash
+npm install
+npm run dev
+```
+
+Vite serves on `http://localhost:5173` by default.
+
+Optional env:
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `VITE_API_URL` | `http://localhost:3000` | Rails API base URL |
+
+Docker (optional):
+
+```bash
+docker compose up
+```
+
+Compose sets `VITE_API_URL` (default `http://localhost:3000`).
+
+### Scripts
+
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Dev server |
+| `npm test` | Vitest once |
+| `npm run test:watch` | Vitest watch |
+| `npm run build` | Typecheck + production build |
+| `npm run lint` | ESLint |
+
+## Related repo
+
+| Repo | Role |
+|---|---|
+| [salary_manager_backend](../salary_manager_backend) | Rails 8.1 API, payroll clock, calculator, analytics |
+
+Keep FE and API same-site in deployed environments so the session cookie is sent (`SameSite=Lax`).
