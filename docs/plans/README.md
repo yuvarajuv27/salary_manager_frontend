@@ -1,9 +1,5 @@
 # Implementation plans
 
-One file per feature: `<feature-slug>.md`.
+Canonical whole-release plan (M0–M6 + post-MVP revisions): [salary-manager.md](./salary-manager.md).
 
-Each plan should include bite-sized tasks with exact file paths and verification (tests) steps. Prefer Superpowers `writing-plans` output here.
-
-| Plan | Notes |
-|---|---|
-| [salary-manager.md](./salary-manager.md) | Whole-release milestone plan (FE + BE). Backend companion links here. |
+Backend companion: `salary_manager_backend/docs/plans/salary-manager.md` (links here for milestones).

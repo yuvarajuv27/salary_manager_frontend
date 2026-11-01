@@ -2,14 +2,6 @@
 
 Frontend design: [salary-manager.md](./salary-manager.md).
 
-Backend design, including the database and the API: [salary-manager.md](../../../salary_manager_backend_local/docs/architecture/salary-manager.md) in the backend repo.
+Backend design, including the database and the API: [salary-manager.md](../../../salary_manager_backend/docs/architecture/salary-manager.md) in the sibling backend repo.
 
-One file per feature: `<feature-slug>.md`.
-
-Each doc should cover:
-
-- Context and goals
-- FE vs BE ownership
-- Data the screen sends and renders
-- Key flows
-- Risks and constraints
+One file per feature: `<feature-slug>.md` when needed. Prefer updating the whole-product docs above for cross-cutting revisions.
